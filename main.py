@@ -2,6 +2,7 @@ from math import sin, cos
 from numpy import poly1d as poly, polyadd, polyval
 import copy
 import random
+import numpy as np
 
 N = 4
 
@@ -78,5 +79,72 @@ def lagrange():
     print(f"Interpolate Value for x = {x} -> ln({x}) = {L.interpolate(x)}")
 
 
+# Function as it is
+def real_function(x):
+    return pow(x, 2) - 12 * x + 30
+
+
+# Build the X Matrix
+def build_x_matrix(m, x_arr):
+    output = []
+    while len(x_arr) != 0:
+        current_x = x_arr.pop(0)
+        current_row = []
+        for i in range(m, 0, -1):
+            current_row.append(pow(current_x, i))
+        current_row.append(1)
+        output.append(current_row)
+    return output
+
+
+# Compute the a polynom given the formula
+def compute_a_polynom(x_matrix, y_arr):
+    # Convert to numpy
+    np_x_matrix = np.array(x_matrix)
+    np_y_arr = np.array(y_arr)
+    np_x_matrix_T = np_x_matrix.transpose()
+    multiplication = np.dot(np_x_matrix_T, np_x_matrix)
+    inverse_multiplication = np.linalg.inv(multiplication)
+    first_out_multiplication = np.dot(inverse_multiplication, np_x_matrix_T)
+    final_result = np.dot(first_out_multiplication, np_y_arr)
+    return final_result
+
+
+# Horner Scheme for computing the value of x
+def horner_apply_polynom(a, x, p):
+    a_coeficients = a.tolist()
+    current_d = a_coeficients[0]
+    for i in range(1, p + 1):
+        current_d = current_d * x + a_coeficients[i]
+    return current_d
+
+
+def least_differences():
+    # Known Values
+    [x1, x2, x4, x5] = [1, 2, 4, 5]
+    [y1, y2, y4, y5] = [real_function(x1), real_function(x2), real_function(x4),
+                        real_function(x5)]
+    # Value for which to Compute the Output
+    x3 = 2.25
+    # Polynom Grade
+    m = 4
+
+    # Compute the arrays out of the Given values
+    x_arr = [x1, x2, x4, x5]
+    y_arr = [y1, y2, y4, y5]
+
+    # Build the X Matrix
+    x_matrix = build_x_matrix(m, x_arr)
+
+    # Build the Polynom aka the A Array Coefficients
+    a_polynom = compute_a_polynom(x_matrix, y_arr)
+    # Apply Horner Scheme to output the Final Value
+    computed_value = horner_apply_polynom(a_polynom, x3, m)
+    # Prints
+    print(computed_value)
+    print(real_function(x3))
+
+
 if __name__ == '__main__':
-    lagrange()
+    # lagrange()
+    least_differences()
