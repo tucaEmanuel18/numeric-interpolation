@@ -4,23 +4,25 @@ import copy
 import random
 import numpy as np
 
+FUNCTION_NUMBER = 0
 N = 4
 
 
-def generate_input_values(input_file_path):
-    def execute_function(function_number, x):
-        if function_number == 0:
-            return x * x - 12 * x + 30
-        elif function_number == 1:
-            return sin(x) - cos(x)
-        else:
-            return 2 * pow(x, 3) - 3 * x + 15
+# Function as it is
+def real_function(x):
+    if FUNCTION_NUMBER == 0:
+        return pow(x, 2) - 12 * x + 30
+    elif FUNCTION_NUMBER == 1:
+        return sin(x) - cos(x)
+    else:
+        return 2 * pow(x, 3) - 3 * x + 15
 
+
+def generate_input_values(input_file_path):
     f = open(input_file_path, "r")
     data = f.read().split('\n')
     x0 = float(data[0])
     xn = float(data[1])
-    function_number = int(data[2])
     x_set = {x0, xn}
     while len(x_set) < N + 1:
         x_set.add(random.uniform(x0, xn))
@@ -28,7 +30,7 @@ def generate_input_values(input_file_path):
     x_list.sort()
     y_list = list()
     for x in x_list:
-        y_list.append(execute_function(function_number, x))
+        y_list.append(real_function(x))
 
     return x_list, y_list
 
@@ -50,7 +52,7 @@ class Lagrange:
         dd_list = copy.deepcopy(self.y_list)
         for i in range(1, N + 1):
             for j in reversed(range(i, N + 1)):
-                dd_list[j] = (dd_list[j] - dd_list[j - 1]) / (self.x_list[j] - self.x_list[0])
+                dd_list[j] = (dd_list[j] - dd_list[j - 1]) / (self.x_list[j] - self.x_list[N-i-(N - j)])
         return dd_list
 
     def compute_poly_products(self):
@@ -77,11 +79,7 @@ def lagrange():
     print(f"{L}")
     x = 3
     print(f"Interpolate Value for x = {x} -> ln({x}) = {L.interpolate(x)}")
-
-
-# Function as it is
-def real_function(x):
-    return pow(x, 2) - 12 * x + 30
+    print(f"Actual function value for x = {x} -> f({x}) = {real_function(x)}")
 
 
 # Build the X Matrix
@@ -141,10 +139,10 @@ def least_differences():
     # Apply Horner Scheme to output the Final Value
     computed_value = horner_apply_polynom(a_polynom, x3, m)
     # Prints
-    print(computed_value)
-    print(real_function(x3))
+    print(f"Intepolate value = {computed_value}")
+    print(f"Real value f({x3}) = {real_function(x3)}")
 
 
 if __name__ == '__main__':
-    # lagrange()
-    least_differences()
+    lagrange()
+    # least_differences()
